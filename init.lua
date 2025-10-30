@@ -105,6 +105,7 @@ require("lualine").setup({
 
 -- File explorer
 require("nvim-tree").setup({
+  update_cwd = true,
   view = { width = 35 },
   renderer = { highlight_opened_files = "name" },
 })
