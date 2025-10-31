@@ -219,6 +219,9 @@ vim.g.mapleader = " "
 -- ----- File explorer & search -----
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle file explorer" })
 vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>", { desc = "Find files" })
+vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>", { desc = "Search text in all files" })
+vim.keymap.set("n", "<leader>fw", ":Telescope grep_string<CR>", { desc = "Search word under cursor" })
+vim.keymap.set("n", "<leader>fb", ":Telescope buffers<CR>", { desc = "Find open buffers" })
 
 -- ----- Git -----
 vim.keymap.set("n", "]c", function() require("gitsigns").next_hunk() end, { desc = "Next hunk" })
