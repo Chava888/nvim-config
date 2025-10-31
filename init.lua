@@ -239,6 +239,21 @@ vim.keymap.set("n", "<C-j>", "<C-w>j")
 vim.keymap.set("n", "<C-k>", "<C-w>k")
 vim.keymap.set("n", "<C-l>", "<C-w>l")
 
+-- ----- Window management / Split views -----
+vim.keymap.set("n", "<leader>sv", ":vsplit<CR>", { desc = "Split window vertically" })
+vim.keymap.set("n", "<leader>sh", ":split<CR>", { desc = "Split window horizontally" })
+vim.keymap.set("n", "<leader>sx", ":close<CR>", { desc = "Close current split" })
+vim.keymap.set("n", "<leader>so", ":only<CR>", { desc = "Close all other splits" })
+
+-- Resize splits
+vim.keymap.set("n", "<C-Up>", ":resize +2<CR>", { desc = "Increase window height" })
+vim.keymap.set("n", "<C-Down>", ":resize -2<CR>", { desc = "Decrease window height" })
+vim.keymap.set("n", "<C-Left>", ":vertical resize -2<CR>", { desc = "Decrease window width" })
+vim.keymap.set("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Increase window width" })
+
+-- Equal split sizes
+vim.keymap.set("n", "<leader>=", "<C-w>=", { desc = "Make splits equal size" })
+
 -- ----- Indenting -----
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
