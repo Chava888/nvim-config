@@ -7,20 +7,22 @@
 -- =============================
 local opt = vim.opt
 
-opt.number = true                 -- Show absolute line numbers
-opt.relativenumber = true         -- Show relative line numbers
-opt.tabstop = 2                   -- Number of spaces per <Tab>
-opt.shiftwidth = 2                -- Indentation width
-opt.expandtab = true              -- Convert tabs to spaces
-opt.smartindent = true            -- Smart autoindenting
-opt.wrap = false                  -- Disable line wrapping
-opt.ignorecase = true             -- Ignore case when searching
-opt.smartcase = true              -- Override ignorecase if uppercase in query
-opt.hlsearch = false              -- Don’t highlight search matches
-opt.incsearch = true              -- Incremental search
-opt.clipboard = "unnamedplus"     -- Sync system clipboard
-opt.termguicolors = true          -- Enable 24-bit color
-opt.cursorline = true             -- Highlight current line
+opt.number = true
+opt.relativenumber = true
+opt.tabstop = 2
+opt.shiftwidth = 2
+opt.expandtab = true
+opt.smartindent = true
+opt.wrap = false
+opt.ignorecase = true
+opt.smartcase = true
+opt.hlsearch = false
+opt.incsearch = true
+opt.clipboard = "unnamedplus"
+opt.termguicolors = true
+opt.cursorline = true
+opt.scrolloff = 8
+opt.signcolumn = "yes"
 
 -- Medium cursor thickness in insert mode
 vim.cmd("set guicursor=n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20")
@@ -28,10 +30,10 @@ vim.cmd("set guicursor=n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20")
 -- =============================
 -- ⚙️ BOOTSTRAP lazy.nvim
 -- =============================
--- lazy.nvim is the plugin manager that handles plugin installation & updates.
--- If it’s not installed, this section automatically clones it.
+vim.g.mapleader = " "
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
     "git", "clone", "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git",
@@ -72,16 +74,13 @@ local plugins = {
   { "saadparwaiz1/cmp_luasnip" },
 
   -- ----- 🔧 Editing Enhancements -----
-  { "numToStr/Comment.nvim" },     -- "gcc" to toggle comments
-  { "kylechui/nvim-surround" },    -- Add/change/delete surrounding characters
-  { "windwp/nvim-autopairs" },     -- Auto-close brackets, quotes, etc.
+  { "numToStr/Comment.nvim" },
+  { "kylechui/nvim-surround" },
+  { "windwp/nvim-autopairs" },
 
   -- ----- 🧭 Git Integration -----
-  { "lewis6991/gitsigns.nvim" },   -- Git hunk indicators & actions
-  { "sindrets/diffview.nvim", dependencies = "nvim-lua/plenary.nvim" },
-
-  -- ----- 🪲 Debugging -----
-  { "mfussenegger/nvim-dap" },
+  { "lewis6991/gitsigns.nvim" },
+  { "sindrets/diffview.nvim" },
 }
 
 require("lazy").setup(plugins, {})
@@ -90,11 +89,11 @@ require("lazy").setup(plugins, {})
 -- 🎨 UI CONFIGURATION
 -- =============================
 
--- Theme setup
 require("tokyonight").setup({ style = "day" })
 vim.cmd([[colorscheme tokyonight-day]])
 
--- Status line (bottom bar)
+require("telescope").setup({})
+
 require("lualine").setup({
   options = {
     theme = "tokyonight",
@@ -103,9 +102,8 @@ require("lualine").setup({
   },
 })
 
--- File explorer
 require("nvim-tree").setup({
-  update_cwd = true,
+  sync_root_with_cwd = true,
   view = { width = 35 },
   renderer = { highlight_opened_files = "name" },
 })
@@ -114,16 +112,16 @@ require("nvim-tree").setup({
 -- =============================
 -- 🧠 LSP (Language Servers)
 -- =============================
+local servers = { "lua_ls", "pyright", "ts_ls", "rust_analyzer", "ruby_lsp", "gopls" }
+
 require("mason").setup()
 require("mason-lspconfig").setup({
-  ensure_installed = { "lua_ls", "pyright", "ts_ls", "rust_analyzer", "ruby_lsp", "gopls" },
+  ensure_installed = servers,
   automatic_installation = true,
 })
 
--- Use classic lspconfig API (still required for Mason)
 local lspconfig = require("lspconfig")
 
--- Common keymaps when LSP attaches
 local on_attach = function(_, bufnr)
   local opts = { buffer = bufnr, silent = true }
   vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
@@ -134,11 +132,8 @@ local on_attach = function(_, bufnr)
   vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
 end
 
--- Capabilities for autocompletion
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
--- List of servers to configure
-local servers = { "ruby_lsp", "gopls", "pyright", "lua_ls", "ts_ls", "rust_analyzer" }
 for _, server in ipairs(servers) do
   lspconfig[server].setup({
     on_attach = on_attach,
@@ -146,8 +141,7 @@ for _, server in ipairs(servers) do
   })
 end
 
--- Diagnostic signs
-local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
 for type, icon in pairs(signs) do
   local hl = "DiagnosticSign" .. type
   vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
@@ -171,8 +165,6 @@ cmp.setup({
     ["<C-n>"] = cmp.mapping.select_next_item(),
     ["<C-Space>"] = cmp.mapping.complete(),
     ["<CR>"] = cmp.mapping.confirm({ select = true }),
-
-    -- Smart Tab completion / snippet jumping
     ["<Tab>"] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_next_item()
@@ -209,12 +201,27 @@ require("nvim-surround").setup()
 require("nvim-autopairs").setup()
 require("gitsigns").setup()
 
+require("nvim-treesitter.configs").setup({
+  ensure_installed = { "lua", "python", "typescript", "javascript", "rust", "go", "ruby" },
+  highlight = { enable = true },
+  indent = { enable = true },
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true,
+      keymaps = {
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+      },
+    },
+  },
+})
+
 -- =============================
 -- 🪄 KEYMAPS
 -- =============================
-
--- Leader key (space)
-vim.g.mapleader = " "
 
 -- ----- File explorer & search -----
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle file explorer" })
@@ -236,7 +243,7 @@ vim.keymap.set("n", "<leader>gb", function() require("gitsigns").blame_line() en
 -- ----- Window navigation -----
 vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
 vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to bottom window" })
-vim.keymap.set("n", "<C-u>", "<C-w>k", { desc = "Move to top window" })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to top window" })
 vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
 
 -- ----- Window management / Split views -----
@@ -269,11 +276,3 @@ vim.api.nvim_create_autocmd("BufWritePost", {
   pattern = "init.lua",
   command = "source <afile>",
 })
-
--- ========================================================================
--- ✅ END OF CONFIG
--- Notes:
--- - Plugins are managed by lazy.nvim → edit plugin list near the top.
--- - LSP settings → see the “🧠 LSP” section.
--- - Keymaps are grouped by purpose under “🪄 KEYMAPS”.
--- ========================================================================
