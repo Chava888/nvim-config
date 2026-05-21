@@ -54,6 +54,7 @@ local plugins = {
   -- ----- 🗂️ File Navigation -----
   { "nvim-tree/nvim-tree.lua", dependencies = { "nvim-tree/nvim-web-devicons" } },
   { "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
+  { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 
   -- ----- 🌳 Syntax / Code Highlighting -----
   { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
@@ -81,6 +82,22 @@ local plugins = {
   -- ----- 🧭 Git Integration -----
   { "lewis6991/gitsigns.nvim" },
   { "sindrets/diffview.nvim" },
+
+  -- ----- 💎 Ruby / Rails -----
+  { "tpope/vim-rails" },
+
+  -- ----- 🧪 Testing -----
+  { "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-neotest/nvim-nio",
+      "olimorris/neotest-rspec",
+    },
+  },
+
+  -- ----- 🖥️ Terminal -----
+  { "akinsho/toggleterm.nvim" },
 }
 
 require("lazy").setup(plugins, {})
@@ -92,7 +109,16 @@ require("lazy").setup(plugins, {})
 require("tokyonight").setup({ style = "day" })
 vim.cmd([[colorscheme tokyonight-day]])
 
-require("telescope").setup({})
+require("telescope").setup({
+  extensions = {
+    fzf = {
+      fuzzy = true,
+      override_generic_sorter = true,
+      override_file_sorter = true,
+    },
+  },
+})
+require("telescope").load_extension("fzf")
 
 require("lualine").setup({
   options = {
@@ -219,6 +245,19 @@ require("nvim-treesitter.configs").setup({
   },
 })
 
+require("toggleterm").setup({
+  size = 20,
+  open_mapping = [[<C-\>]],
+  direction = "horizontal",
+  shade_terminals = true,
+})
+
+require("neotest").setup({
+  adapters = {
+    require("neotest-rspec"),
+  },
+})
+
 -- =============================
 -- 🪄 KEYMAPS
 -- =============================
@@ -268,6 +307,20 @@ vim.keymap.set("v", ">", ">gv")
 -- ----- Move lines -----
 vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down" })
 vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up" })
+
+-- ----- Terminal -----
+vim.keymap.set("n", "<leader>tt", ":ToggleTerm<CR>", { desc = "Toggle terminal" })
+vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
+
+-- ----- Rails -----
+vim.keymap.set("n", "<leader>ra", ":A<CR>", { desc = "Alternate file (e.g. model ↔ spec)" })
+vim.keymap.set("n", "<leader>rr", ":R<CR>", { desc = "Related file" })
+
+-- ----- Tests -----
+vim.keymap.set("n", "<leader>tn", function() require("neotest").run.run() end, { desc = "Run nearest test" })
+vim.keymap.set("n", "<leader>tf", function() require("neotest").run.run(vim.fn.expand("%")) end, { desc = "Run test file" })
+vim.keymap.set("n", "<leader>to", function() require("neotest").output.open() end, { desc = "Open test output" })
+vim.keymap.set("n", "<leader>ts", function() require("neotest").summary.toggle() end, { desc = "Toggle test summary" })
 
 -- =============================
 -- 🔁 AUTO-RELOAD CONFIG ON SAVE
