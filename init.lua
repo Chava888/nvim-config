@@ -106,8 +106,8 @@ require("lazy").setup(plugins, {})
 -- 🎨 UI CONFIGURATION
 -- =============================
 
-require("tokyonight").setup({ style = "day" })
-vim.cmd([[colorscheme tokyonight-day]])
+require("tokyonight").setup({ style = "night" })
+vim.cmd([[colorscheme tokyonight-night]])
 
 require("telescope").setup({
   extensions = {
